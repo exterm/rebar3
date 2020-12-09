@@ -177,7 +177,8 @@ transform_opts([{dir, Dirs}|Rest], Acc) ->
 transform_opts([{suite, Suites}|Rest], Acc) ->
     transform_opts(Rest, [{suite, split_string(Suites)}|Acc]);
 transform_opts([{group, Groups}|Rest], Acc) ->
-    transform_opts(Rest, [{group, split_string(Groups)}|Acc]);
+    GroupOpt = lists:map(fun split_group/1, split_string(Groups)),
+    transform_opts(Rest, [{group, GroupOpt}|Acc]);
 transform_opts([{testcase, Cases}|Rest], Acc) ->
     transform_opts(Rest, [{testcase, split_string(Cases)}|Acc]);
 transform_opts([{config, Configs}|Rest], Acc) ->
@@ -223,6 +224,9 @@ transform_retry(Opts, State) ->
 
 split_string(String) ->
     rebar_string:lexemes(String, [$,]).
+
+split_group(String) ->
+    [list_to_atom(X) || X <- rebar_string:lexemes(String, [$.])].
 
 cfgopts(State) ->
     case rebar_state:get(State, ct_opts, []) of
